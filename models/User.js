@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10; //salt가몇글자인지? 10자리.
+const jwt = require('jsonwebtoken');
 
 
 
@@ -52,8 +53,31 @@ userSchema.pre('save', function (next) {
                 next()
             })
         })
+    } else {
+        //다른것을 바꾸는 경우 바로 next
+        next()
     }
 })
+
+userSchema.methods.comparePassword = function (plainPassword, cb) {
+    //비밀번호 비교시 plainPassword가 그냥 비밀번호(ex 1234567) 암호화된 비밀번호!#!#^^ 두개가 맞는지 체크를 해야함. 복호화를 다시 할순없음.
+    bcrypt.compare(plainPassword, this.password, function (err, isMatch) {
+        if (err) return cb(err);
+            //비교했을시 에러는 없고 매치한다면 콜백으로 에러는 null, isMatch=true를 날린다.
+        cb(null, isMatch);
+    })
+}
+
+//jsonwebtoken 을 이용해서 토큰 생성하기
+userSchema.methods.generateToken = function (cb) {
+    var user = this
+    var token = jwt.sign(user._id.toJSON(), 'secretToken') //user.id+'secretToken' = token  .toJSON()이나  .toHexString()을 붙여줘야한다. 그래야 string type이됨. user._id는 타입이 오브젝트임.
+    user.token = token
+    user.save(function (err, user) {
+        if (err) return cb(err)
+        cb(null,user) //여기서 이 정보가 index에서 토큰생성하는 부분으로 콜백쏨.
+    })
+}
 
 //스키마 model로 감싸기
 const User = mongoose.model('User', userSchema)
