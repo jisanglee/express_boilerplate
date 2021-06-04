@@ -6,7 +6,7 @@ const config = require('./config/key')
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const { User } = require('./models/User');
-
+const { auth } = require('./middleware/auth');
 //client에서 bodyParser를 통해 데이터 가져올수있게
 //application/x-www-form-urlencoded 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -28,7 +28,7 @@ app.get('/', (req, res) => {
     res.send('Hello World!1111')
 });
 // 회원 가입을 위한 router
-app.post('/register', (req, res) => {
+app.post('/api/usersregister', (req, res) => {
     //회원가입 할 때 필요한 정보들을 client에서 가져오면 그것들을 database에 넣음
     const user = User(req.body);
     
@@ -68,6 +68,25 @@ app.post('/api/users/login', (req, res) => {
         })
     })
 })
+//auth route 
+//end point에서 req받아서 콜백 펑션 하기 전에 auth미들웨어에서 무언가(여기선 인증처리) 처리해줌.
+//cookie에서 저장된 token을 서버에서 가져와서 복호화 >> 복호화 하면 userID가 나오는데 그 아이디를 이용해서 데이터베이스 Users(기본적으로 s를 붙여 생성이되어있음) Collection에서 유저를 찾은 후 쿠키에서 받아온 token이 유저도 갖고있는지 확인. 일치하면 authentication true, 그 해당하는 유저의 정보들을 선별해서
+app.get('/api/users/auth', auth, (req, res) => {
+  //  여기에 왔다는건 미들웨어를 잘 통화해서 Authentication이 True 임.
+    //클라에 status200과 정보 전달 그리고 role에따라 일반유저>>0 아니면 관리자
+    res.status(200).json({
+        _id: req.user._id,
+        isAdmin: req.user.role === 0 ? false : true,
+        email: req.user.email,
+        name: req.user.name,
+        lastname: req.user.lastname,
+        role: req.user.role,
+        image:req.user.image,
+    })
+})
+
+
+
 
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)

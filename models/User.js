@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10; //salt가몇글자인지? 10자리.
 const jwt = require('jsonwebtoken');
-
+const config = require('./config/key')
 
 
 const userSchema = mongoose.Schema({
@@ -71,11 +71,24 @@ userSchema.methods.comparePassword = function (plainPassword, cb) {
 //jsonwebtoken 을 이용해서 토큰 생성하기
 userSchema.methods.generateToken = function (cb) {
     var user = this
-    var token = jwt.sign(user._id.toJSON(), 'secretToken') //user.id+'secretToken' = token  .toJSON()이나  .toHexString()을 붙여줘야한다. 그래야 string type이됨. user._id는 타입이 오브젝트임.
+    var token = jwt.sign(user._id.toJSON(), config.token) //user.id+'secretToken' = token  .toJSON()이나  .toHexString()을 붙여줘야한다. 그래야 string type이됨. user._id는 타입이 오브젝트임.
     user.token = token
     user.save(function (err, user) {
         if (err) return cb(err)
         cb(null,user) //여기서 이 정보가 index에서 토큰생성하는 부분으로 콜백쏨.
+    })
+}
+
+//토큰 복호화 하고 디비에서 유저 찾는 메소드
+userSchema.statics.findByToken = function (token,cb) {
+    var user = this;
+    //token decode
+    jwt.verify(token, config.token, function (err, decoded) {
+        //유저 아이디 이용해서 유저를 찾은 다음에 클라에서 가져온 토큰과 디비에 보관된 토큰이 일치하는지 확인
+        user.findOne({ "_id": decoded, "token": token }, function (err, user) {
+            if (err) return cb(err);
+            cb(null, user);
+        })
     })
 }
 
