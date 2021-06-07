@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const saltRounds = 10; //salt가몇글자인지? 10자리.
 const jwt = require('jsonwebtoken');
-const config = require('./config/key')
+const config = require('../config/key');
 
 
 const userSchema = mongoose.Schema({
