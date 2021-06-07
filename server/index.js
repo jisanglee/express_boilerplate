@@ -100,6 +100,12 @@ app.get('/api/users/logout', auth, (req, res) => {
     )
 })
 
+
+//hello
+app.get('/api/hello', (req, res) => {
+    res.send('Hello Guys!!');
+})
+
 app.listen(port, () => {
     console.log(`Example app listening at http://localhost:${port}`)
 });
