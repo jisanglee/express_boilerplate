@@ -28,15 +28,15 @@ app.get('/', (req, res) => {
     res.send('Hello World!1111')
 });
 // 회원 가입을 위한 router
-app.post('/api/usersregister', (req, res) => {
+app.post('/api/users/register', (req, res) => {
     //회원가입 할 때 필요한 정보들을 client에서 가져오면 그것들을 database에 넣음
     const user = User(req.body);
     
     //model안에 세이브 save하기전에 bcrypt로 비번을 암호화
     user.save((err, userInfo) => {
-    if (err) return res.json({ success: false, err })
+    if (err) return res.json({ registerSuccess: false, err })
     return res.status(200).json({
-      success: true
+      registerSuccess: true
     })
   })  
 })
@@ -92,9 +92,9 @@ app.get('/api/users/logout', auth, (req, res) => {
     //토큰 지우기
         { token: "" },
         (err, user) => {
-            if (err) return res.json({ success: false, err });
+            if (err) return res.json({ logoutSuccess: false, err });
             return res.status(200).send({
-                success:true
+                logoutSuccess:true
             })
         }
     )
