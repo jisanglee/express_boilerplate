@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
 import styled from 'styled-components';
+import { withRouter } from 'react-router-dom';
 function LandingPage(props) {
     useEffect(() => {
         axios.get('/api/hello')
@@ -12,6 +13,7 @@ function LandingPage(props) {
             .then(response => {
                 if (response.data.logoutSuccess) {
                     alert('로그아웃되었습니다');
+                    //history.push 부분이 react-router-dom에서 지원.
                     props.history.push('/login')
                 } else {
                     alert('로그아웃 하는데 실패했습니다.');
@@ -35,4 +37,4 @@ const LandingPageStyled = styled.div`
     height: 100vh;
 `;
 
-export default LandingPage;
+export default withRouter(LandingPage);
